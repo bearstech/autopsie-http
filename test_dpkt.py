@@ -8,6 +8,7 @@ f = open(sys.argv[1], 'r')
 pcap = dpkt.pcap.Reader(f)
 buffers = {}
 requests = {}
+timers = {}
 
 
 for ts, buf in pcap:
@@ -24,6 +25,8 @@ for ts, buf in pcap:
             buffers[bk] = tcp.data
         else:
             buffers[bk] += tcp.data
+        if bk not in timers:
+            timers[bk] = ts
         try:
             if tcp.dport == 80:
                 http = dpkt.http.Request(buffers[bk])
@@ -44,8 +47,11 @@ for ts, buf in pcap:
                                               tcp.sport)
                     print "http://%s/%s" % (requests[rk].headers['host'],
                                             requests[rk].uri)
+                    print "latency:", ts - timers[bk]
                     print "\t", requests[rk].headers
                     print
+                    print "Status:", http.status
+                    print "Chrono:", ts - timers[rk]
                     print "\t", http.headers
                     print
                     print
