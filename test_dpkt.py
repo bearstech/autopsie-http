@@ -7,6 +7,7 @@ import dpkt
 f = open(sys.argv[1], 'r')
 pcap = dpkt.pcap.Reader(f)
 buffers = {}
+requests = {}
 
 
 for ts, buf in pcap:
@@ -32,8 +33,19 @@ for ts, buf in pcap:
             pass
         else:
             del buffers[bk]
-            print(socket.inet_ntoa(ip.src), tcp.sport,
-                  socket.inet_ntoa(ip.dst), tcp.dport)
-            print http.headers
-            print "------------------------------------"
-    #print ts
+            if tcp.dport == 80:
+                requests[(ip.src, tcp.sport, ip.dst, tcp.dport)] = http
+            else:
+                rk = (ip.dst, tcp.dport, ip.src, tcp.sport)
+                if rk in requests:
+                    print "%s:%i -> %s:%i" % (socket.inet_ntoa(ip.dst),
+                                              tcp.dport,
+                                              socket.inet_ntoa(ip.src),
+                                              tcp.sport)
+                    print "http://%s/%s" % (requests[rk].headers['host'],
+                                            requests[rk].uri)
+                    print "\t", requests[rk].headers
+                    print
+                    print "\t", http.headers
+                    print
+                    print
