@@ -9,7 +9,7 @@ class HTTPReader(object):
 
     Request and its response are grouped.
     Yield lots of informations :
-        * source_destination: source ip and ort, destination ip and port
+        * source_destination: source ip and port, destination ip and port
         * timers: starting request, starting response, ending response
         * request
         * response
