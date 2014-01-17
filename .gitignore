@@ -1,0 +1,7 @@
+.Python
+.ropeproject/
+lib
+bin
+include
+share
+*.cap
