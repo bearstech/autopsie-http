@@ -20,7 +20,9 @@ class HTTPReader(object):
         self.port = port
         self.buffers = {}
         self.requests = {}
-        self.timers = {}
+        self.request_timers = {}
+        self.request_end_timers = {}
+        self.response_timers = {}
 
     def __iter__(self):
         for ts, buf in self.pcap:
@@ -38,12 +40,18 @@ class HTTPReader(object):
                 # Not empty packet, on the right port
                 is_request = tcp.dport == self.port
                 bk = (ip.src, tcp.sport, ip.dst, tcp.dport)  # Buffer key
+                # request key
+                rk = (ip.dst, tcp.dport, ip.src, tcp.sport)
                 if bk not in self.buffers:
                     self.buffers[bk] = tcp.data
                 else:
                     self.buffers[bk] += tcp.data
-                if bk not in self.timers:
-                    self.timers[bk] = ts
+                if is_request:
+                    if bk not in self.request_timers:
+                        self.request_timers[bk] = ts
+                else:
+                    if bk not in self.response_timers:
+                        self.response_timers[bk] = ts
                 try:
                     if is_request:
                         http = dpkt.http.Request(self.buffers[bk])
@@ -55,15 +63,22 @@ class HTTPReader(object):
                 else:
                     del self.buffers[bk]
                     if is_request:
-                        self.requests[(ip.src, tcp.sport,
-                                       ip.dst, tcp.dport)] = http
+                        self.requests[bk] = http
+                        self.request_end_timers[bk] = ts
                     else:
-                        # request key
-                        rk = (ip.dst, tcp.dport, ip.src, tcp.sport)
                         if rk in self.requests:
+                            assert self.request_timers[rk] <= self.response_timers[bk]
+                            assert self.response_timers[bk] <= ts
+                            request_start = self.request_timers[rk]
+                            request_end = self.request_end_timers[rk]
+                            response_start = self.response_timers[bk]
+                            del self.request_timers[rk]
+                            del self.request_end_timers[rk]
+                            del self.response_timers[bk]
                             yield (socket.inet_ntoa(ip.src), tcp.sport,
                                    socket.inet_ntoa(ip.dst), tcp.dport
-                                   ), (self.timers[bk], self.timers[rk], ts
+                                   ), (request_start, request_end,
+                                       response_start, ts
                                        ), self.requests[rk], http
 
 if __name__ == '__main__':
