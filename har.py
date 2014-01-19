@@ -34,7 +34,6 @@ class HARWriter(object):
                     "id": "plop",
                     "title": "plop",
                     "pageTimings": {
-                        "onContentLoad": -1,
                         "onLoad": -1
                     }
                 }
@@ -88,6 +87,7 @@ class HARWriter(object):
             entry['time'] = entry['timings']['send'] + entry['timings']['wait'] + entry['timings']['receive']
             har['log']['entries'].append(entry)
             har['log']['pages'][0]['pageTimings']['onContentLoad'] = int((te_response - first_ts) * 1000)
+            har['log']['pages'][0]['pageTimings']['onLoad'] = har['log']['pages'][0]['pageTimings']['onContentLoad']
         return har
 
     def write_to(self, path):
