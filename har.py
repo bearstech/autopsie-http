@@ -75,7 +75,7 @@ class HARWriter(object):
                     "blocked": -1,
                     "dns": -1,
                     "connect": -1,
-                    "send": int((ts_request - te_request) * 1000),
+                    "send": int((te_request - ts_request) * 1000),
                     "wait": int((ts_response - te_request) * 1000),
                     "receive": int((te_response - ts_response) * 1000),
                     "ssl": -1
@@ -85,6 +85,9 @@ class HARWriter(object):
                 "connection": "%s:%i" % (source_ip, source_port),
             }
             entry['time'] = entry['timings']['send'] + entry['timings']['wait'] + entry['timings']['receive']
+            print entry['time']
+            #t = entry['timings']
+            #print t['send'], t['wait'], t['receive']
             har['log']['entries'].append(entry)
             har['log']['pages'][0]['pageTimings']['onContentLoad'] = int((te_response - first_ts) * 1000)
             har['log']['pages'][0]['pageTimings']['onLoad'] = har['log']['pages'][0]['pageTimings']['onContentLoad']
