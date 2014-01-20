@@ -78,11 +78,13 @@ class HTTPReader(object):
                             del self.request_start_timers[rk]
                             del self.request_end_timers[rk]
                             del self.response_timers[bk]
+                            request = self.requests[rk]
+                            del self.requests[rk]
                             yield (socket.inet_ntoa(ip.src), tcp.sport,
                                    socket.inet_ntoa(ip.dst), tcp.dport
                                    ), (request_start, request_end,
                                        response_start, ts
-                                       ), self.requests[rk], http
+                                       ), request, http
 
 if __name__ == '__main__':
     import sys
