@@ -90,20 +90,36 @@ class HTTPReader(object):
 if __name__ == '__main__':
     import sys
     import os
+    import argparse
 
     # Don't buffer on STDOUT
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-    if sys.argv[1] == '-i':
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('-i', '--interface', dest='interface', default=None)
+    parser.add_argument('-p', '--port', dest='port', default=80, type=int, nargs='+')
+    parser.add_argument('-f', '--file', dest='file', default=None, help="A tcpdump exported file.")
+    args = parser.parse_args()
+    print args
+
+    pcap = None
+    if args.interface is not None:
+        if args.file is not None:
+            raise Exception("Choose file or live, but not both.")
         import pcap as _pcap
-        pcap = _pcap.pcap(sys.argv[2])
-        if len(sys.argv) > 3:
-            pcap.setfilter(' '.join(sys.argv[3:]))
-        print("listening on %s" % sys.argv[2])
-    else:
-        f = open(sys.argv[1], 'r')
+        pcap = _pcap.pcap(args.interface)
+        #if len(sys.argv) > 3:
+            #pcap.setfilter(' '.join(sys.argv[3:]))
+        print("listening on %s" % args.interface)
+
+    if args.file is not None:
+        f = open(args.file, 'r')
         pcap = dpkt.pcap.Reader(f)
-    for source_destination, timers, request, response in HTTPReader(pcap):
+
+    if pcap is None:
+        raise Exception("Choose a tcpdump file or listen an interface.")
+
+    for source_destination, timers, request, response in HTTPReader(pcap, args.port):
         source, sport, destination, dport = source_destination
         sys.stdout.write("\n")
         timer = int((timers[3] - timers[0]) * 1000)
