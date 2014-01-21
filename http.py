@@ -80,9 +80,9 @@ class HTTPReader(object):
                             del self.response_timers[bk]
                             request = self.requests[rk]
                             del self.requests[rk]
-                            yield (socket.inet_ntoa(ip.src), tcp.sport,
-                                   socket.inet_ntoa(ip.dst), tcp.dport
-                                   ), (request_start, request_end,
+                            yield (socket.inet_ntoa(ip.dst), tcp.dport,
+                                   socket.inet_ntoa(ip.src), tcp.sport), (
+                                       request_start, request_end,
                                        response_start, ts
                                        ), request, http
 
