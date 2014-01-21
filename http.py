@@ -17,7 +17,7 @@ class HTTPReader(object):
         * response
     """
 
-    def __init__(self, pcap, port=80):
+    def __init__(self, pcap, port=[80]):
         self.pcap = pcap
         self.port = port
         self.buffers = {}
@@ -37,10 +37,10 @@ class HTTPReader(object):
                 # I want TCP
                 continue
             tcp = ip.data
-            if (tcp.dport == self.port or
-                    tcp.sport == self.port) and len(tcp.data) > 0:
+            if (tcp.dport in self.port or
+                    tcp.sport in self.port) and len(tcp.data) > 0:
                 # Not empty packet, on the right port
-                is_request = tcp.dport == self.port
+                is_request = tcp.dport in self.port
                 bk = (ip.src, tcp.sport, ip.dst, tcp.dport)  # Buffer key
                 rk = (ip.dst, tcp.dport, ip.src, tcp.sport)  # reverse key
                 if bk not in self.buffers:
