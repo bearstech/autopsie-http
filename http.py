@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 import socket
 
 import dpkt
@@ -106,7 +107,7 @@ if __name__ == '__main__':
         source, sport, destination, dport = source_destination
         sys.stdout.write("\n")
         timer = int((timers[3] - timers[0]) * 1000)
-        print("%s:%i => %s:%i" % (source, sport, destination, dport))
+        print("%s:%i → %s:%i" % (source, sport, destination, dport))
         print("%s http://%s%s %i ms" % (request.method, request.headers['host'],
                                         request.uri, timer))
         print(request.headers)
