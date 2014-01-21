@@ -107,7 +107,8 @@ if __name__ == '__main__':
         sys.stdout.write("\n")
         timer = int((timers[3] - timers[0]) * 1000)
         print("%s:%i => %s:%i" % (source, sport, destination, dport))
-        print("http://%s%s %i ms" % (request.headers['host'], request.uri, timer))
+        print("%s http://%s%s %i ms" % (request.method, request.headers['host'],
+                                        request.uri, timer))
         print(request.headers)
         print(response.headers)
         #sys.stdout.flush()
