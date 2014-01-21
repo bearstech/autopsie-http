@@ -103,8 +103,10 @@ if __name__ == '__main__':
         f = open(sys.argv[1], 'r')
         pcap = dpkt.pcap.Reader(f)
     for source_destination, timers, request, response in HTTPReader(pcap):
+        source, sport, destination, dport = source_destination
         sys.stdout.write("\n")
         timer = int((timers[3] - timers[0]) * 1000)
+        print("%s:%i => %s:%i" % (source, sport, destination, dport))
         print("http://%s%s %i ms" % (request.headers['host'], request.uri, timer))
         print(request.headers)
         print(response.headers)
