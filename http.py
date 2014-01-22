@@ -101,7 +101,7 @@ class Filter(object):
                     response_header[self.key] == self.predicat)
 
 
-def Yes():
+def Yes(request_header, response_header):
     return True
 
 
