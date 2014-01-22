@@ -87,6 +87,24 @@ class HTTPReader(object):
                                        response_start, ts
                                        ), request, http
 
+
+class Filter(object):
+    def __init__(self, raw):
+        key, predicat = args.filter.split('=')
+        self.key = key.strip()
+        self.predicat = predicat.strip()
+
+    def __call__(self, request_header, response_header):
+        return (self.key in request_header and
+                request_header[self.key] == self.predicat) or (
+                    self.key in response_header and
+                    response_header[self.key] == self.predicat)
+
+
+def Yes():
+    return True
+
+
 if __name__ == '__main__':
     import sys
     import os
@@ -97,8 +115,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-i', '--interface', dest='interface', default=None)
-    parser.add_argument('-p', '--port', dest='port', default=80, type=int, nargs='+')
-    parser.add_argument('-f', '--file', dest='file', default=None, help="A tcpdump exported file.")
+    parser.add_argument('-p', '--port', dest='port', default=[80],
+                        type=int, nargs='+')
+    parser.add_argument('-f', '--file', dest='file', default=None,
+                        help="A tcpdump exported file.")
+    parser.add_argument('-F', '--filter', dest='filter', default=None,
+                        help="A filter on headers")
     args = parser.parse_args()
     print args
 
@@ -119,13 +141,18 @@ if __name__ == '__main__':
     if pcap is None:
         raise Exception("Choose a tcpdump file or listen an interface.")
 
+    if args.filter is None:
+        _filter = Yes
+    else:
+        _filter = Filter(args.filter)
+
     for source_destination, timers, request, response in HTTPReader(pcap, args.port):
         source, sport, destination, dport = source_destination
-        sys.stdout.write("\n")
-        timer = int((timers[3] - timers[0]) * 1000)
-        print("%s:%i → %s:%i" % (source, sport, destination, dport))
-        print("%s http://%s%s %i ms" % (request.method, request.headers['host'],
-                                        request.uri, timer))
-        print(request.headers)
-        print(response.headers)
-        #sys.stdout.flush()
+        if _filter(request.headers, response.headers):
+            sys.stdout.write("\n")
+            timer = int((timers[3] - timers[0]) * 1000)
+            print("%s:%i → %s:%i" % (source, sport, destination, dport))
+            print("%s http://%s%s %i ms" % (request.method, request.headers['host'],
+                                            request.uri, timer))
+            print(request.headers)
+            print(response.headers)
