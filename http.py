@@ -152,7 +152,7 @@ if __name__ == '__main__':
             sys.stdout.write("\n")
             timer = int((timers[3] - timers[0]) * 1000)
             print("%s:%i → %s:%i" % (source, sport, destination, dport))
-            print("%s http://%s%s %i ms" % (request.method, request.headers['host'],
+            print("[%s] %s http://%s%s %i ms" % (response.status, request.method, request.headers['host'],
                                             request.uri, timer))
             print(request.headers)
             print(response.headers)
