@@ -1,4 +1,4 @@
-#!/usr/bin/env python -u
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 import socket
 import json
