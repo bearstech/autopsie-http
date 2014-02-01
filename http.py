@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -u
 # -*- coding: utf8 -*-
 import socket
 import json
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         if args.file is not None:
             raise Exception("Choose file or live, but not both.")
         import pcap as _pcap
-        pcap = _pcap.pcap(args.interface)
+        pcap = _pcap.pcap(args.interface, immediate=True)
         #if len(sys.argv) > 3:
             #pcap.setfilter(' '.join(sys.argv[3:]))
         print("listening on %s" % args.interface)
@@ -167,25 +167,24 @@ if __name__ == '__main__':
                 if logstash is None:
                     logstash = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     logstash.connect((args.logstash, 4807))
-                    logstash.send(json.dumps(dict(
-                        ip=dict(
-                            source=source,
-                            sport=sport,
-                            destination=destination,
-                            dport=dport),
-                        http=dict(
-                            request=dict(
-                                method=request.method,
-                                host=request.headers['host'],
-                                uri=request.uri,
-                                headers=request.headers,
-                            ),
-                            response=dict(
-                                status=response.status,
-                                timer=timer,
-                                headers=response.headers,
-                            )
+                logstash.sendall(json.dumps(dict(
+                    ip=dict(
+                        source=source,
+                        sport=sport,
+                        destination=destination,
+                        dport=dport),
+                    http=dict(
+                        request=dict(
+                            method=request.method,
+                            host=request.headers['host'],
+                            uri=request.uri,
+                            headers=request.headers,
+                        ),
+                        response=dict(
+                            status=response.status,
+                            timer=timer,
+                            headers=response.headers,
                         )
-                    )))
-                    logstash.send("\n")
+                    )
+                )) + "\n")
 
