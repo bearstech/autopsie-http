@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import socket
+import json
 
 import dpkt
 
@@ -121,6 +122,8 @@ if __name__ == '__main__':
                         help="A tcpdump exported file.")
     parser.add_argument('-F', '--filter', dest='filter', default=None,
                         help="A filter on headers")
+    parser.add_argument('-l', '--logstash', dest='logstash', default=None,
+                        help="A logstash server")
     args = parser.parse_args()
     print args
 
@@ -146,13 +149,43 @@ if __name__ == '__main__':
     else:
         _filter = Filter(args.filter)
 
+    logstash = None
+
     for source_destination, timers, request, response in HTTPReader(pcap, args.port):
         source, sport, destination, dport = source_destination
         if _filter(request.headers, response.headers):
-            sys.stdout.write("\n")
             timer = int((timers[3] - timers[0]) * 1000)
-            print("%s:%i → %s:%i" % (source, sport, destination, dport))
-            print("[%s] %s http://%s%s %i ms" % (response.status, request.method, request.headers['host'],
-                                            request.uri, timer))
-            print(request.headers)
-            print(response.headers)
+            if args.logstash is None:
+                sys.stdout.write("\n")
+
+                print("%s:%i → %s:%i" % (source, sport, destination, dport))
+                print("[%s] %s http://%s%s %i ms" % (response.status, request.method, request.headers['host'],
+                                                request.uri, timer))
+                print(request.headers)
+                print(response.headers)
+            else:
+                if logstash is None:
+                    logstash = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    logstash.connect((args.logstash, 4807))
+                    logstash.send(json.dumps(dict(
+                        ip=dict(
+                            source=source,
+                            sport=sport,
+                            destination=destination,
+                            dport=dport),
+                        http=dict(
+                            request=dict(
+                                method=request.method,
+                                host=request.headers['host'],
+                                uri=request.uri,
+                                headers=request.headers,
+                            ),
+                            response=dict(
+                                status=response.status,
+                                timer=timer,
+                                headers=response.headers,
+                            )
+                        )
+                    )))
+                    logstash.send("\n")
+
