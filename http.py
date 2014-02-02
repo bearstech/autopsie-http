@@ -167,24 +167,27 @@ if __name__ == '__main__':
                 if logstash is None:
                     logstash = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     logstash.connect((args.logstash, 4807))
-                logstash.sendall(json.dumps(dict(
-                    ip=dict(
-                        source=source,
-                        sport=sport,
-                        destination=destination,
-                        dport=dport),
-                    http=dict(
-                        request=dict(
-                            method=request.method,
-                            host=request.headers['host'],
-                            uri=request.uri,
-                            headers=request.headers,
-                        ),
-                        response=dict(
-                            status=response.status,
-                            timer=timer,
-                            headers=response.headers,
+                try:
+                    logstash.sendall(json.dumps(dict(
+                        ip=dict(
+                            source=source,
+                            sport=sport,
+                            destination=destination,
+                            dport=dport),
+                        http=dict(
+                            request=dict(
+                                method=request.method,
+                                host=request.headers['host'],
+                                uri=request.uri,
+                                headers=request.headers,
+                            ),
+                            response=dict(
+                                status=response.status,
+                                timer=timer,
+                                headers=response.headers,
+                            )
                         )
-                    )
-                )) + "\n")
-
+                    )) + "\n")
+                except socket.error as e:
+                    print "Oups", e
+                    logstash = None
