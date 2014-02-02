@@ -164,10 +164,10 @@ if __name__ == '__main__':
                 print(request.headers)
                 print(response.headers)
             else:
-                if logstash is None:
-                    logstash = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    logstash.connect((args.logstash, 4807))
                 try:
+                    if logstash is None:
+                        logstash = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        logstash.connect((args.logstash, 4807))
                     logstash.sendall(json.dumps(dict(
                         ip=dict(
                             source=source,
