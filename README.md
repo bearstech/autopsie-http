@@ -18,7 +18,8 @@ Install it
 Use it
 ------
 
-### Cold analysis
+### Input
+#### Cold analysis
 
 Extract HTTP information from a tcpdump.
 
@@ -32,9 +33,35 @@ Analyse it on place, or on a different computer
 
     ./http.py toto.cap
 
-### Live analysis
+#### Live analysis
 
     ./http.py -i eth0
+
+### Output
+
+#### Console
+
+The default view is a simple console view. Useful for debugging RPC or Proxy.
+
+#### Logstash analysis
+
+Sometime, watching logs like the good guys in Matrix is not enough.
+
+Kibana is a nice log drilling tool (with Logstash and Elasticsearch).
+
+Autopsie can send data to Logstash, throught a socket.
+If the logstash server is behind a NAT, configuration will be painful, VPN is the best solution.
+
+Logstash provides a 'all in one' packet, embedding Elasticsearch and Kibana.
+
+The used protocol is dummy, you can test it with netcat :
+
+    nc -l 4807
+
+Logstash configuration is easy to read, check provided example, and launch it :
+
+    java -jar logstash-1.3.3-flatjar.jar agent -f logstash.conf -- web
+
 
 Licence
 -------
