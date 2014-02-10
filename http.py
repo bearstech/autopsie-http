@@ -55,9 +55,9 @@ class HTTPReader(object):
                 else:
                     if bk not in self.response_timers:
                         self.response_timers[bk] = ts
-                    # Clean dirty request
-                    if rk in self.buffers:
-                        del self.buffers[rk]
+                # Clean dirty stuff
+                if rk in self.buffers:
+                    del self.buffers[rk]
 
                 try:
                     if is_request:
