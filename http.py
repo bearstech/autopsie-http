@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 import socket
 import json
+from datetime import datetime
 
 import dpkt
 
@@ -174,7 +175,7 @@ if __name__ == '__main__':
                         logstash = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         logstash.connect((args.logstash, 4807))
                     logstash.sendall(json.dumps({
-                        '@timestamp':timers[-1],
+                        '@timestamp':datetime.fromtimestamp(timers[-1]).isoformat(),
                         'ip':dict(
                             source=source,
                             sport=sport,
