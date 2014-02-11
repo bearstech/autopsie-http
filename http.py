@@ -5,6 +5,11 @@ import json
 
 import dpkt
 
+try:
+    from http_parser.parser import HttpParser
+except ImportError:
+    from http_parser.pyparser import HttpParser
+
 
 class HTTPReader(object):
     """
@@ -22,7 +27,7 @@ class HTTPReader(object):
         self.pcap = pcap
         self.port = port
         self.buffers = {}
-        self.requests = {}
+        self.readers = {}
         self.request_start_timers = {}
         self.request_end_timers = {}
         self.response_timers = {}
@@ -44,10 +49,18 @@ class HTTPReader(object):
                 is_request = tcp.dport in self.port
                 bk = (ip.src, tcp.sport, ip.dst, tcp.dport)  # Buffer key
                 rk = (ip.dst, tcp.dport, ip.src, tcp.sport)  # reverse key
-                if bk not in self.buffers:
-                    self.buffers[bk] = tcp.data
+                if not is_request and rk not in self.readers:  # response without it request
+                    continue
+                if is_request:
+                    kind = 0
                 else:
-                    self.buffers[bk] += tcp.data
+                    kind = 1
+                if bk not in self.readers:
+                    self.readers[bk] = HttpParser(kind=kind)
+                size = len(tcp.data)
+                nparsed = self.readers[bk].execute(tcp.data, size)
+                #assert nparsed == size
+                # I should try to read the body, now, here
 
                 if is_request:
                     if bk not in self.request_start_timers:
@@ -55,41 +68,27 @@ class HTTPReader(object):
                 else:
                     if bk not in self.response_timers:
                         self.response_timers[bk] = ts
-                # Clean dirty stuff
-                if rk in self.buffers:
-                    del self.buffers[rk]
 
-                try:
-                    if is_request:
-                        http = dpkt.http.Request(self.buffers[bk])
-                    else:
-                        http = dpkt.http.Response(self.buffers[bk])
-                except dpkt.dpkt.UnpackError:
-                    # buffer is too short, append stuff and try later
-                    pass
-                else:
-                    del self.buffers[bk]
-                    if is_request:
-                        self.requests[bk] = http
-                        self.request_end_timers[bk] = ts
-                        assert bk in self.request_start_timers
-                    else:
-                        if rk in self.requests:
-                            #assert self.request_timers[rk] <= self.response_timers[bk]
-                            #assert self.response_timers[bk] <= ts
-                            request_start = self.request_start_timers[rk]
-                            request_end = self.request_end_timers[rk]
-                            response_start = self.response_timers[bk]
-                            del self.request_start_timers[rk]
-                            del self.request_end_timers[rk]
-                            del self.response_timers[bk]
-                            request = self.requests[rk]
-                            del self.requests[rk]
-                            yield (socket.inet_ntoa(ip.dst), tcp.dport,
-                                   socket.inet_ntoa(ip.src), tcp.sport), (
-                                       request_start, request_end,
-                                       response_start, ts
-                                       ), request, http
+                if is_request and self.readers[bk].is_message_complete():
+                    self.request_end_timers[bk] = ts
+                    assert bk in self.request_start_timers
+
+                if not is_request and self.readers[bk].is_message_complete():
+                    request_start = self.request_start_timers[rk]
+                    request_end = self.request_end_timers[rk]
+                    response_start = self.response_timers[bk]
+                    response = self.readers[bk]
+                    request = self.readers[rk]
+                    del self.request_start_timers[rk]
+                    del self.request_end_timers[rk]
+                    del self.response_timers[bk]
+                    del self.readers[rk]
+                    del self.readers[bk]
+                    yield (socket.inet_ntoa(ip.dst), tcp.dport,
+                            socket.inet_ntoa(ip.src), tcp.sport), (
+                                request_start, request_end,
+                                response_start, ts
+                                ), request, response
 
 
 class Filter(object):
@@ -156,16 +155,16 @@ if __name__ == '__main__':
 
     for source_destination, timers, request, response in HTTPReader(pcap, args.port):
         source, sport, destination, dport = source_destination
-        if _filter(request.headers, response.headers):
+        if _filter(request.get_headers(), response.get_headers()):
             timer = int((timers[3] - timers[0]) * 1000)
             if args.logstash is None:
                 sys.stdout.write("\n")
 
                 print("%s:%i → %s:%i" % (source, sport, destination, dport))
-                print("[%s] %s http://%s%s %i ms" % (response.status, request.method, request.headers['host'],
-                                                request.uri, timer))
-                print(request.headers)
-                print(response.headers)
+                print("[%s] %s http://%s%s %i ms" % (response.get_status_code(), request.get_method(), request.get_headers()['host'],
+                                                request.get_url(), timer))
+                print(request.get_headers())
+                print(response.get_headers())
             else:
                 try:
                     if logstash is None:
