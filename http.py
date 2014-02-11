@@ -178,15 +178,15 @@ if __name__ == '__main__':
                             dport=dport),
                         http=dict(
                             request=dict(
-                                method=request.method,
-                                host=request.headers['host'],
-                                uri=request.uri,
-                                headers=request.headers,
+                                method=request.get_method(),
+                                host=request.get_headers()['host'],
+                                uri=request.get_url(),
+                                headers=request.get_headers(),
                             ),
                             response=dict(
-                                status=response.status,
+                                status=response.get_status_code(),
                                 timer=timer,
-                                headers=response.headers,
+                                headers=response.get_headers(),
                             )
                         )
                     )) + "\n")
