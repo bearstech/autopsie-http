@@ -75,8 +75,11 @@ class HTTPReader(object):
 
                 if not is_request and self.readers[bk].is_message_complete():
                     request_start = self.request_start_timers[rk]
-                    request_end = self.request_end_timers[rk]
                     response_start = self.response_timers[bk]
+                    if rk in self.request_end_timers:
+                        request_end = self.request_end_timers[rk]
+                    else:
+                        request_end = response_start
                     response = self.readers[bk]
                     request = self.readers[rk]
                     del self.request_start_timers[rk]
