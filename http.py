@@ -84,7 +84,8 @@ class HTTPReader(object):
                     response = self.readers[bk]
                     request = self.readers[rk]
                     del self.request_start_timers[rk]
-                    del self.request_end_timers[rk]
+                    if rk in self.request_end_timers:
+                        del self.request_end_timers[rk]
                     del self.response_timers[bk]
                     del self.readers[rk]
                     del self.readers[bk]
