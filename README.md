@@ -13,7 +13,7 @@ Install it
 
 ### Debian or Ubuntu
 
-    apt-get install python-dpkt python-pypcap
+    apt-get install python-dpkt python-pypcap python-http-parser
 
 Use it
 ------
