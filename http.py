@@ -113,6 +113,10 @@ def Yes(request_header, response_header):
     return True
 
 
+def normalize_dict(dico):
+    return dict([(k.lower(), v) for (k, v) in dico.items()])
+
+
 if __name__ == '__main__':
     import sys
     import os
@@ -186,12 +190,12 @@ if __name__ == '__main__':
                             request=dict(
                                 method=request.get_method(),
                                 uri=request.get_url(),
-                                headers=request.get_headers(),
+                                headers=normalize_dict(request.get_headers()),
                             ),
                             response=dict(
                                 status=response.get_status_code(),
                                 timer=timer,
-                                headers=response.get_headers(),
+                                headers=normalize_dict(response.get_headers()),
                             )
                         )
                     }
