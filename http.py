@@ -175,7 +175,7 @@ if __name__ == '__main__':
                     if logstash is None:
                         logstash = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         logstash.connect((args.logstash, 4807))
-                    logstash.sendall(json.dumps({
+                    event = {
                         '@timestamp':datetime.fromtimestamp(timers[-1]).isoformat(),
                         'ip':dict(
                             source=source,
@@ -185,7 +185,6 @@ if __name__ == '__main__':
                         'http':dict(
                             request=dict(
                                 method=request.get_method(),
-                                host=request.get_headers()['host'],
                                 uri=request.get_url(),
                                 headers=request.get_headers(),
                             ),
@@ -195,7 +194,12 @@ if __name__ == '__main__':
                                 headers=response.get_headers(),
                             )
                         )
-                    }) + "\n")
+                    }
+                    if 'host' in request.get_headers():
+                        event['http']['request']['host'] = request.get_headers()['host']
+                    else:
+                        event['http']['request']['host'] = destination
+                    logstash.sendall(json.dumps(event) + "\n")
                 except socket.error as e:
                     print "Oups", e
                     logstash = None
