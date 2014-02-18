@@ -207,19 +207,23 @@ if __name__ == '__main__':
                         event['http']['request']['host'] = request.get_headers()['host']
                     else:
                         event['http']['request']['host'] = destination
-                    if 'content-type' in event['http']['response']:
-                        if ';' in event['http']['response']['content-type']:
-                            ct, other = event['http']['response']['content-type'].split(';')
-                            event['http']['response']['content-type'] = ct
-                        event['http']['response']['content-type-family'] = event['http']['response']['content-type-family'].split('/')[0]
-                    if 'accept-encoding' in event['http']['request']['headers']:
-                        event['http']['request']['headers']['accept-encoding'] = args_and_weight(event['http']['request']['headers']['accept-encoding'])
-                    if 'accept-charset' in event['http']['request']['headers']:
-                        event['http']['request']['headers']['accept-charset'] = args_and_weight(event['http']['request']['headers']['accept-accept-charset'])
-                    if 'accept-language' in event['http']['request']['headers']:
-                        event['http']['request']['headers']['accept-language'] = args_and_weight(event['http']['request']['headers']['accept-accept-language'])
-                    if 'accept' in event['http']['request']['headers']:
-                        event['http']['request']['headers']['accept'] = args_and_weight(event['http']['request']['headers']['accept'])
+                    req_headers = event['http']['request']['headers']
+                    res_headers = event['http']['response']['headers']
+                    if 'content-type' in res_headers:
+                        if ';' in res_headers['content-type']:
+                            ct, other = res_headers['content-type'].split(';')
+                            res_headers['content-type'] = ct
+                        res_headers['content-type-family'] = res_headers['content-type'].split('/')[0]
+                    if 'accept-encoding' in res_headers:
+                        res_headers['accept-encoding'] = args_and_weight(res_headers['accept-encoding'])
+                    if 'accept-charset' in res_headers:
+                        res_headers['accept-charset'] = args_and_weight(res_headers['accept-accept-charset'])
+                    if 'accept-language' in res_headers:
+                        res_headers['accept-language'] = args_and_weight(res_headers['accept-accept-language'])
+                    if 'accept' in res_headers:
+                        res_headers['accept'] = args_and_weight(res_headers['accept'])
+                    event['http']['request']['headers'] = req_headers
+                    event['http']['response']['headers'] = res_headers
 
                     logstash.sendall(json.dumps(event, separators=(',', ':')) + "\n")
                 except socket.error as e:
