@@ -117,6 +117,10 @@ def normalize_dict(dico):
     return dict([(k.lower(), v) for (k, v) in dico.items()])
 
 
+def args_and_weight(txt):
+    return [arg.split(';')[0].strip() for arg in txt.split(',')]
+
+
 if __name__ == '__main__':
     import sys
     import os
@@ -203,6 +207,20 @@ if __name__ == '__main__':
                         event['http']['request']['host'] = request.get_headers()['host']
                     else:
                         event['http']['request']['host'] = destination
+                    if 'content-type' in event['http']['response']:
+                        if ';' in event['http']['response']['content-type']:
+                            ct, other = event['http']['response']['content-type'].split(';')
+                            event['http']['response']['content-type'] = ct
+                        event['http']['response']['content-type-family'] = event['http']['response']['content-type-family'].split('/')[0]
+                    if 'accept-encoding' in event['http']['request']:
+                        event['http']['request']['accept-encoding'] = args_and_weight(event['http']['request']['accept-encoding'])
+                    if 'accept-charset' in event['http']['request']:
+                        event['http']['request']['accept-charset'] = args_and_weight(event['http']['request']['accept-accept-charset'])
+                    if 'accept-language' in event['http']['request']:
+                        event['http']['request']['accept-language'] = args_and_weight(event['http']['request']['accept-accept-language'])
+                    if 'accept' in event['http']['request']:
+                        event['http']['request']['accept'] = args_and_weight(event['http']['request']['accept'])
+
                     logstash.sendall(json.dumps(event, separators=(',', ':')) + "\n")
                 except socket.error as e:
                     print "Oups", e
