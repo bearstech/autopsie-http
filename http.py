@@ -214,14 +214,14 @@ if __name__ == '__main__':
                             ct, other = res_headers['content-type'].split(';')
                             res_headers['content-type'] = ct
                         res_headers['content-type-family'] = res_headers['content-type'].split('/')[0]
-                    if 'accept-encoding' in res_headers:
-                        res_headers['accept-encoding'] = args_and_weight(res_headers['accept-encoding'])
-                    if 'accept-charset' in res_headers:
-                        res_headers['accept-charset'] = args_and_weight(res_headers['accept-accept-charset'])
-                    if 'accept-language' in res_headers:
-                        res_headers['accept-language'] = args_and_weight(res_headers['accept-accept-language'])
-                    if 'accept' in res_headers:
-                        res_headers['accept'] = args_and_weight(res_headers['accept'])
+                    if 'accept-encoding' in req_headers:
+                        req_headers['accept-encoding'] = args_and_weight(req_headers['accept-encoding'])
+                    if 'accept-charset' in req_headers:
+                        req_headers['accept-charset'] = args_and_weight(req_headers['accept-charset'])
+                    if 'accept-language' in req_headers:
+                        req_headers['accept-language'] = args_and_weight(req_headers['accept-language'])
+                    if 'accept' in req_headers:
+                        req_headers['accept'] = args_and_weight(req_headers['accept'])
                     event['http']['request']['headers'] = req_headers
                     event['http']['response']['headers'] = res_headers
 
