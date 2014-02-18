@@ -212,14 +212,14 @@ if __name__ == '__main__':
                             ct, other = event['http']['response']['content-type'].split(';')
                             event['http']['response']['content-type'] = ct
                         event['http']['response']['content-type-family'] = event['http']['response']['content-type-family'].split('/')[0]
-                    if 'accept-encoding' in event['http']['request']:
-                        event['http']['request']['accept-encoding'] = args_and_weight(event['http']['request']['accept-encoding'])
-                    if 'accept-charset' in event['http']['request']:
-                        event['http']['request']['accept-charset'] = args_and_weight(event['http']['request']['accept-accept-charset'])
-                    if 'accept-language' in event['http']['request']:
-                        event['http']['request']['accept-language'] = args_and_weight(event['http']['request']['accept-accept-language'])
-                    if 'accept' in event['http']['request']:
-                        event['http']['request']['accept'] = args_and_weight(event['http']['request']['accept'])
+                    if 'accept-encoding' in event['http']['request']['headers']:
+                        event['http']['request']['headers']['accept-encoding'] = args_and_weight(event['http']['request']['headers']['accept-encoding'])
+                    if 'accept-charset' in event['http']['request']['headers']:
+                        event['http']['request']['headers']['accept-charset'] = args_and_weight(event['http']['request']['headers']['accept-accept-charset'])
+                    if 'accept-language' in event['http']['request']['headers']:
+                        event['http']['request']['headers']['accept-language'] = args_and_weight(event['http']['request']['headers']['accept-accept-language'])
+                    if 'accept' in event['http']['request']['headers']:
+                        event['http']['request']['headers']['accept'] = args_and_weight(event['http']['request']['headers']['accept'])
 
                     logstash.sendall(json.dumps(event, separators=(',', ':')) + "\n")
                 except socket.error as e:
