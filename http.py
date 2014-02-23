@@ -225,6 +225,10 @@ if __name__ == '__main__':
                         req_headers['accept-language'] = args_and_weight(req_headers['accept-language'])
                     if 'accept' in req_headers:
                         req_headers['accept'] = args_and_weight(req_headers['accept'])
+                    if 'content-length' in req_headers:
+                        req_headers['content-length'] = int(req_headers['content-length'])
+                    if 'content-length' in res_headers:
+                        res_headers['content-length'] = int(res_headers['content-length'])
                     if 'cookie' in req_headers:
                         cookie = SimpleCookie()
                         cookie.load(req_headers['cookie'])
