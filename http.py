@@ -228,7 +228,10 @@ if __name__ == '__main__':
                     if 'content-length' in req_headers:
                         req_headers['content-length'] = int(req_headers['content-length'])
                     if 'content-length' in res_headers:
-                        res_headers['content-length'] = int(res_headers['content-length'])
+                        try:
+                            res_headers['content-length'] = int(res_headers['content-length'])
+                        except ValueError as e:
+                            print "content length is rotten:", e
                     if 'cookie' in req_headers:
                         cookie = SimpleCookie()
                         try:
