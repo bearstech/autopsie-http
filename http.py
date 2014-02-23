@@ -3,7 +3,7 @@
 import socket
 import json
 from datetime import datetime
-from Cookie import SimpleCookie
+from Cookie import SimpleCookie, CookieError
 
 import dpkt
 
@@ -231,8 +231,11 @@ if __name__ == '__main__':
                         res_headers['content-length'] = int(res_headers['content-length'])
                     if 'cookie' in req_headers:
                         cookie = SimpleCookie()
-                        cookie.load(req_headers['cookie'])
-                        event['http']['request']['cookie'] = dict([(k, cookie[k].value) for k in cookie.keys()])
+                        try:
+                            cookie.load(req_headers['cookie'])
+                            event['http']['request']['cookie'] = dict([(k, cookie[k].value) for k in cookie.keys()])
+                        except CookieError as e:
+                            print "oups' cookie: ", e
                     event['http']['request']['headers'] = req_headers
                     event['http']['response']['headers'] = res_headers
 
