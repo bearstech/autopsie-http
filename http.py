@@ -3,6 +3,7 @@
 import socket
 import json
 from datetime import datetime
+from Cookie import SimpleCookie
 
 import dpkt
 
@@ -222,6 +223,10 @@ if __name__ == '__main__':
                         req_headers['accept-language'] = args_and_weight(req_headers['accept-language'])
                     if 'accept' in req_headers:
                         req_headers['accept'] = args_and_weight(req_headers['accept'])
+                    if 'cookie' in req_headers:
+                        cookie = SimpleCookie()
+                        cookie.load(req_headers['cookie'])
+                        event['http']['request']['cookie'] = dict([(k, cookie[k].value) for k in cookie.keys()])
                     event['http']['request']['headers'] = req_headers
                     event['http']['response']['headers'] = res_headers
 
