@@ -214,7 +214,9 @@ if __name__ == '__main__':
                         if ';' in res_headers['content-type']:
                             ct, other = res_headers['content-type'].split(';')
                             res_headers['content-type'] = ct
-                        res_headers['content-type-family'] = res_headers['content-type'].split('/')[0]
+                        event['http']['response']['content-type-family'] = res_headers['content-type'].split('/')[0]
+                    if 'server' in res_headers:
+                        event['http']['response']['server-family'] = res_headers['server'].split('/')[0]
                     if 'accept-encoding' in req_headers:
                         req_headers['accept-encoding'] = args_and_weight(req_headers['accept-encoding'])
                     if 'accept-charset' in req_headers:
