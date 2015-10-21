@@ -58,7 +58,7 @@ class HTTPReader(object):
                 else:
                     kind = 1
                 if bk not in self.readers:
-                    self.readers[bk] = HttpParser(kind=kind)
+                    self.readers[bk] = HttpParser(kind=kind, decompress=True)
                 size = len(tcp.data)
                 nparsed = self.readers[bk].execute(tcp.data, size)
                 #assert nparsed == size
