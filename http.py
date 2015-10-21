@@ -122,6 +122,11 @@ def args_and_weight(txt):
     return [arg.split(';')[0].strip() for arg in txt.split(',')]
 
 
+def flat_dict(d, writer):
+    for k, v in d.items():
+        writer.write("{%s: %s} " % (k, v))
+
+
 if __name__ == '__main__':
     import sys
     import os
@@ -177,8 +182,15 @@ if __name__ == '__main__':
                 print("%s:%i → %s:%i" % (source, sport, destination, dport))
                 print("[%s] %s http://%s%s %i ms" % (response.get_status_code(), request.get_method(), request.get_headers()['host'],
                                                 request.get_url(), timer))
-                print(request.get_headers())
-                print(response.get_headers())
+                w = sys.stdout
+                flat_dict(request.get_headers(), w)
+                w.write('\n')
+                flat_dict(response.get_headers(), w)
+                if response.get_headers().get('content-type', '').split(';')[0].strip() == "application/json":
+                    body = response.recv_body()
+                    print body
+                    json.loads(body)
+                    print "JSON is parsable."
             else:
                 try:
                     if logstash is None:
