@@ -196,12 +196,17 @@ if __name__ == '__main__':
                 w = sys.stdout
                 flat_dict(request.get_headers(), w)
                 w.write('\n')
+                print(request.recv_body())
                 flat_dict(response.get_headers(), w)
-                if response.get_headers().get('content-type', '').split(';')[0].strip() == "application/json":
+                if response.get_headers().get('content-type',
+                                              '').split(';')[0].strip() == "application/json":
                     body = response.recv_body()
                     print body
-                    json.loads(body)
-                    print "JSON is parsable."
+                    try:
+                        json.loads(body)
+                        print "JSON is parsable."
+                    except Exception:
+                        pass
             else:
                 try:
                     if logstash is None:
