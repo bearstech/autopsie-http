@@ -99,15 +99,26 @@ class HTTPReader(object):
 
 class Filter(object):
     def __init__(self, raw):
-        key, predicat = args.filter.split('=')
+        if args.filter.find('!=') != -1:
+            self.comp = '!='
+            key, predicat = args.filter.split('!=')
+        else:
+            self.comp = '='
+            key, predicat = args.filter.split('=')
         self.key = key.strip()
         self.predicat = predicat.strip()
 
     def __call__(self, request_header, response_header):
-        return (self.key in request_header and
-                request_header[self.key] == self.predicat) or (
-                    self.key in response_header and
-                    response_header[self.key] == self.predicat)
+        if self.comp == '!=':
+            return (self.key in request_header and
+                    request_header[self.key] != self.predicat) or (
+                        self.key in response_header and
+                        response_header[self.key] != self.predicat)
+        else:
+            return (self.key in request_header and
+                    request_header[self.key] == self.predicat) or (
+                        self.key in response_header and
+                        response_header[self.key] == self.predicat)
 
 
 def Yes(request_header, response_header):
